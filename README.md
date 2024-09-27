@@ -24,15 +24,20 @@ El script crea los siguientes archivos optimizados:
   - `PROJ_LIB`: '...\Python\Python37\Lib\site-packages\osgeo\data\proj'
   - Agregar a la variable `Path` la ruta '...\Python\Python37\Lib\site-packages\osgeo'
   - Chequear en consola `gdalinfo --version`.
-- Instalar la librería Numpy mediante el comando `pip install numpy`.
-- Instalar la librería PIL mediante el comando `pip install pillow`.
+- Instalar la librerías:
+  - [Numpy](https://numpy.org/): `pip install numpy`.
+  - [PIL](https://python-pillow.org/): `pip install pillow`.
+  - Para procesar modelos 3d:
+    - [trimesh](https://trimesh.org/index.html): `pip install trimesh` 
+    - [gltf-pipeline](https://github.com/CesiumGS/gltf-pipeline) (NodeJS): `npm install -g gltf-pipeline`
 
 ## Uso
 
 - Colocar los ortomosaicos .tif/.tiff en máxima resolución disponible en la carpeta `input`. Si el ortomosaico a procesar está en formato tiles, crear una carpeta contenedora con todas las imágenes correspondientes.
-- A los ortomosaicos completos (o la carpeta contenedora en el caso de los tiles) ponerles como nombre el número de registro audiovisual al que pertenecen (este dato será incorporado como metadata en los archivos procesados). NOTA: en caso de que un registro tenga más de un mapeo, agregarle al final de cada nombre de archivo un guión y el número; `-1`,`-2`, etc.
+- Si se desea procesar un modelo 3d, colocar sueltos el .obj y su correspondiente textura y mtl en la misma carpeta `input`.
+- A los ortomosaicos completos (o la carpeta contenedora en el caso de los tiles, o a los obj) ponerles como nombre el número de registro audiovisual al que pertenecen (este dato será incorporado como metadata en los archivos procesados). NOTA: en caso de que un registro tenga más de un mapeo, agregarle al final de cada nombre de archivo un guión y el número; `-1`,`-2`, etc.
 - Si se desea procesar un archivo geotiff MDE (Modelo Digital de Elevación), ingresar a continuación del número de registro audiovisual el sufijo `_mde`, quedando una estructura análoga a `12345678_mde.tif`.
-- En caso de volver a procesar un ortomosaico existente, y querer preservar el mismo MapId, debe ingresar como nombre del archivo el obtenido del procesamiento original (y en caso de ser un mde, agregar el sufijo `_mde` al final), quedando similar a `12345678_MapId-123445_mde.tif`.
+- En caso de volver a procesar un ortomosaico existente (o añadir elementos nuevos), y querer preservar el mismo MapId, debe ingresar como nombre del archivo el obtenido del procesamiento original (y en caso de ser un mde, agregar el sufijo `_mde` al final), quedando similar a `12345678_MapId-123445_mde.tif`.
 - Ejecutar `python process.py` para iniciar la conversión. Los archivos procesados serán creados en la carpeta `output`.
 
 ## Configuración

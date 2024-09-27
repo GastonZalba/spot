@@ -1,7 +1,7 @@
 import json
 from osgeo import gdal
 
-import params as params
+import params
 
 def exportGdalinfo(self, ds):
     '''

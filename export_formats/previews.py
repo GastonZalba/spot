@@ -3,7 +3,7 @@ from PIL import Image, ImageEnhance, ImageColor
 from osgeo_utils.gdal_calc import Calc
 Image.MAX_IMAGE_PIXELS = None
 
-import params as params
+import params
 
 
 def exportStoragePreview(self, geotiff):

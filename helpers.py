@@ -7,10 +7,9 @@ import numpy as np
 import math
 from osgeo import gdal, osr
 
-import params as params
+import params
 
 TEMP_FOLDER = params.tmp_folder
-
 
 def createFolder(folderPath):
     Path(folderPath).mkdir(
@@ -96,13 +95,13 @@ def calculateDEMColorValues(self, geotiff):
 
     array = np.ma.masked_equal(array, params.no_data, copy=False)
 
-    # Remove NoDataValue, it doesn't mess up the percentage calculation
+    # Remove no_data_value, it doesn't mess up the percentage calculation
     if (params.styleDEM['disregard_values_less_than_0']):
         array = np.ma.masked_less(array, 0, False)
         array = array.compressed()
     
-    if (self.noDataValue != 'none'):
-        array = np.ma.masked_equal(array, self.noDataValue, copy=False)
+    if (self.no_data_value != 'none'):
+        array = np.ma.masked_equal(array, self.no_data_value, copy=False)
         array = array.compressed()
     
     # similar to "Cumulative cut count" (Qgis)
@@ -156,7 +155,7 @@ def getLightVersion(self, file_ds):
             'multithread': True,
             'xRes': max(0.3, self.pixelSizeX),
             'yRes': max(0.3, self.pixelSizeY),
-            'dstNodata': 'none' if self.hasAlphaChannel else self.noDataValue
+            'dstNodata': 'none' if self.has_alpha else self.no_data_value
         }
     )
 

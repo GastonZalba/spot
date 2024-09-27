@@ -5,9 +5,9 @@ from pathlib import Path
 import math
 import struct
 
-import params as params
+import params
 import helpers as h
-import generateVRT as vrt
+import vrt
 
 from export_formats.storageRGB import exportStorageRGB
 from export_formats.storageDEM import exportStorageDEM
@@ -16,6 +16,7 @@ from export_formats.geoserverRGB import exportGeoserverRGB
 from export_formats.previews import exportStoragePreview
 from export_formats.quantities import exportQuantities
 from export_formats.outlines import exportOutline
+from export_formats.model3d import export3DModelGLB
 
 from version import __version__
 
@@ -50,7 +51,7 @@ class ConvertGeotiff:
         gdal.SetConfigOption('GDAL_TIFF_INTERNAL_MASK', 'YES')
 
         self.checkDirectories()
-        self.processTifs()
+        self.processFiles()
         self.cleanTempFolder()
 
         print('OPERATION FINISHED')
@@ -84,24 +85,26 @@ class ConvertGeotiff:
         h.createFolder(params.geoserverDEM['output_folder'])
         h.createFolder(params.geoserverDEMRGB['output_folder'])
 
-    def processTifs(self):
+    def processFiles(self):
 
         if(os.listdir(params.input_folder)):
-            vrt.generateVRT()
+            vrt.maybeGenerateVRT()
 
         processed = {}
 
         # Find files in the input folder
         for subdir, dirs, files in os.walk(params.input_folder):
             is_subdir = subdir != params.input_folder
+            
             if(is_subdir):
                 continue
 
             for file in files:
                 filepath = subdir + os.sep + file
-                if (h.getExtension(file) in params.extensions):
-                    try:
+                try:
+                    filenameHasMapId = params.filename_prefix in file
 
+                    if (h.getExtension(file) in params.extensions):
                         print(f'--> PROCESSING FILE {file} <--')
 
                         file_ds = gdal.Open(filepath, gdal.GA_ReadOnly)
@@ -109,16 +112,15 @@ class ConvertGeotiff:
                         bands_count = file_ds.RasterCount
                         self.isDEM = bands_count <= 2
 
-                        lastBand = file_ds.GetRasterBand(bands_count)
-                        self.hasAlphaChannel = (
-                            lastBand.GetColorInterpretation() == 6)  # https://github.com/rasterio/rasterio/issues/100
-                        self.noDataValue = lastBand.GetNoDataValue()  # take any band
+                        last_band = file_ds.GetRasterBand(bands_count)
+                        # https://github.com/rasterio/rasterio/issues/100
+                        self.has_alpha = (last_band.GetColorInterpretation() == 6)
+                        
+                        self.no_data_value = last_band.GetNoDataValue()  # take any band
 
                         # Pix4DMatic injects an erroneous 'nan' value as noData attribute
-                        if ((self.noDataValue != None) and (math.isnan(self.noDataValue))):
-                            self.noDataValue = 0
-
-                        filenameHasMapId = params.filename_prefix in file
+                        if ((self.no_data_value != None) and (math.isnan(self.no_data_value))):
+                            self.no_data_value = 0
 
                         if (self.isDEM):
 
@@ -169,10 +171,10 @@ class ConvertGeotiff:
 
                         self.pixel_area = self.pixelSizeX * abs(self.pixelSizeY)                        
                         
-                        if (self.hasAlphaChannel):
+                        if (self.has_alpha):
                             # generate an ultralight version to calculate the area
                             xsmall_version = gdal.Translate(
-                                params.tmp_folder + "\\warpTmp.vrt",
+                                params.tmp_folder + "\\tmpArea.vrt",
                                 file_ds,
                                 **{                         
                                     'format': 'GTiff',
@@ -229,16 +231,33 @@ class ConvertGeotiff:
 
                         self.exportStorageFiles(file_ds)
 
-                        self.exportGeoserverFiles(file_ds, file)
+                        if ((self.isDEM and (params.geoserverDEM['enabled'] or params.geoserverDEMRGB['enabled'])) or params.geoserverRGB['enabled']):
+                            self.exportGeoserverFiles(file_ds, file)
 
                         # Once we're done, close properly the dataset
                         file_ds = None
+          
+                    elif (bool(params.model3d['enabled']) and (h.getExtension(file) in params.model3d['extensions'])):
+                        self.registroid = file.split(
+                                "_")[0] if filenameHasMapId else h.cleanFilename(h.removeExtension(file))
+                        self.mapId = h.removeExtension(
+                                file.split(params.filename_prefix)[1]) if filenameHasMapId else h.createMapId()
 
-                    except RuntimeError as e:
-                        print(f'ERROR: Unable to process {filepath}')
-                        print(e)
-                        sys.exit(1)
+                        output = f'{self.registroid}{params.filename_prefix}{self.mapId}'
 
+                        # Create parent folder for mapId
+                        self.outputFolder = f'{params.output_folder_storage}/{output}'
+                        h.createFolder(self.outputFolder)
+
+                        self.outputFilename = output
+                        
+                        export3DModelGLB(self, filepath)
+                        
+                except RuntimeError as e:
+                    print(f'ERROR: Unable to process {filepath}')
+                    print(e)
+                    sys.exit(1)
+                    
     def exportStorageFiles(self, file_ds):
         '''
         Export high and low res files
@@ -285,9 +304,10 @@ class ConvertGeotiff:
                 exportGeoserverRGB(self, file_ds)
 
     def cleanTempFolder(self):
-        if os.path.exists(params.tmp_folder):
-            print('-> Removing temp folder')
-            shutil.rmtree(params.tmp_folder)
+        pass
+        # if os.path.exists(params.tmp_folder):
+        #     print('-> Removing temp folder')
+        #     shutil.rmtree(params.tmp_folder)
 
 
 ConvertGeotiff()

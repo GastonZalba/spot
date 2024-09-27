@@ -1,7 +1,7 @@
 from osgeo import gdal
 
 from helpers import addOverviews
-import params as params
+import params
 
 TEMP_FOLDER = params.tmp_folder
 
@@ -16,7 +16,7 @@ def exportGeoserverRGB(self, file_ds):
         'yRes': params.geoserverRGB['gsd']/100 if self.area > params.geoserverRGB['ha_sm_trigger'] else params.geoserverRGB['gsd_sm']/100,
         'multithread': True,
         # force 'none' to fix old error in Drone Deploy exports (https://gdal.org/programs/gdal_translate.html#cmdoption-gdal_translate-a_nodata)
-        'srcNodata': self.noDataValue if not self.hasAlphaChannel else 'none'
+        'srcNodata': self.no_data_value if not self.has_alpha else 'none'
     }
 
     # change all tiff noData values to the same value
@@ -24,7 +24,7 @@ def exportGeoserverRGB(self, file_ds):
         kwargs['dstNodata'] = params.no_data
         warp = True
         print(
-            f'-> Changing noData value from {self.noDataValue} to {params.no_data}')
+            f'-> Changing noData value from {self.no_data_value} to {params.no_data}')
 
     # if file has diferent epsg, convert
     if (self.epsg != params.geoserver_epsg):
@@ -57,12 +57,12 @@ def exportGeoserverRGB(self, file_ds):
             'COMPRESS=JPEG',
             # 'PROFILE=GeoTIFF' # Only GeoTIFF tags will be added to the baseline
         ],
-        'maskBand': 4 if self.hasAlphaChannel else 1,
+        'maskBand': 4 if self.has_alpha else 1,
         'xRes': params.geoserverRGB['gsd']/100 if self.area > params.geoserverRGB['ha_sm_trigger'] else params.geoserverRGB['gsd_sm']/100,
         'yRes': params.geoserverRGB['gsd']/100 if self.area > params.geoserverRGB['ha_sm_trigger'] else params.geoserverRGB['gsd_sm']/100,
         'metadataOptions': self.extra_metadata,
         # to fix old error in Drone Deploy exports (https://gdal.org/programs/gdal_translate.html#cmdoption-gdal_translate-a_nodata)
-        'noData': params.no_data if not self.hasAlphaChannel else 'none'
+        'noData': params.no_data if not self.has_alpha else 'none'
     }
 
     file_ds = gdal.Translate(gdaloutput, file_ds, **kwargs)
