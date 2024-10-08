@@ -4,7 +4,7 @@ from osgeo import gdal
 import params
 import helpers as h
 
-def maybeGenerateVRT():
+def maybe_generate_VRT():
     '''
     Create a VRT file from each folder that cointains tif images (tiles)
     '''
@@ -16,7 +16,7 @@ def maybeGenerateVRT():
             filepath = params.tmp_folder + '\list.txt'
             with open(filepath, "w") as l:
                 for file in files:
-                    if(h.getExtension(file) in params.extensions):
+                    if(h.get_extension(file) in params.extensions):
                         tile_file_path = path + os.sep + file
                         l.write(tile_file_path + '\n')
 

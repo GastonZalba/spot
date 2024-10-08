@@ -21,7 +21,7 @@ def createFolder(folderPath):
 def removeExtension(filename):
     return os.path.splitext(filename)[0]
 
-def getExtension(filename):
+def get_extension(filename):
     return os.path.splitext(filename)[1]
 
 

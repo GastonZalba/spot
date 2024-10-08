@@ -18,7 +18,7 @@ def exportStoragePreview(self, geotiff):
 
     print(f'-> Exporting preview {gdaloutput}')
 
-    if (self.isDEM):
+    if (self.is_dem):
         geotiff = getColoredHillshade(self, geotiff)
 
     gdal.Translate(

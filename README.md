@@ -29,7 +29,9 @@ El script crea los siguientes archivos optimizados:
   - [PIL](https://python-pillow.org/): `pip install pillow`.
   - Para procesar modelos 3d:
     - [trimesh](https://trimesh.org/index.html): `pip install trimesh` 
+    - [pygltflib](https://pypi.org/project/pygltflib/): `pip install pygltflib` 
     - [gltf-pipeline](https://github.com/CesiumGS/gltf-pipeline) (NodeJS): `npm install -g gltf-pipeline`
+
 
 ## Uso
 
