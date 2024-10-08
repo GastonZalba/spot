@@ -1,6 +1,6 @@
 import tempfile
 
-tmp_folder = f'{tempfile.gettempdir()}/geotiff-processor'
+tmp_folder = f'{tempfile.gettempdir()}\geotiff-processor'
 extensions = ['.tif', '.tiff', '.vrt']
 
 input_folder = 'input'
@@ -87,6 +87,11 @@ storageDEM = {
     'overviews': True,
     'quantities': True,
     'gdalinfo': True
+}
+
+model3d = {
+    'enabled': True,
+    'extensions': ['.obj']
 }
 
 previews = {

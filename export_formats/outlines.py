@@ -2,7 +2,7 @@ import os
 from osgeo import gdal, osr, ogr
 import numpy as np
 
-import params as params
+import params
 
 TEMP_FOLDER = params.tmp_folder
 
@@ -36,11 +36,11 @@ def exportOutline(self, file_ds):
 
     outLayer = tmpOutDatasource.CreateLayer("outline", srs=srs)
 
-    if self.hasAlphaChannel:
+    if self.has_alpha:
         maskBand = file_ds.GetRasterBand(4)
     else:
         red_band = file_ds.GetRasterBand(1).ReadAsArray()
-        maskBand = np.where(red_band == self.noDataValue, 0, 255).astype(np.uint8)
+        maskBand = np.where(red_band == self.no_data_value, 0, 255).astype(np.uint8)
         file_ds.GetRasterBand(1).WriteArray(maskBand)
         maskBand = file_ds.GetRasterBand(1)
 

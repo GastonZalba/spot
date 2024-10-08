@@ -1,4 +1,4 @@
-import params as params
+import params
 
 
 def exportQuantities(self):

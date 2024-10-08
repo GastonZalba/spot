@@ -5,9 +5,9 @@ from pathlib import Path
 import math
 import struct
 
-import params as params
+import params
 import helpers as h
-import generateVRT as vrt
+import vrt
 
 from export_formats.storageRGB import exportStorageRGB
 from export_formats.storageDEM import exportStorageDEM
@@ -16,6 +16,7 @@ from export_formats.geoserverRGB import exportGeoserverRGB
 from export_formats.previews import exportStoragePreview
 from export_formats.quantities import exportQuantities
 from export_formats.outlines import exportOutline
+from export_formats.model3d import export_3d_model_glb
 
 from version import __version__
 
@@ -49,13 +50,13 @@ class ConvertGeotiff:
 
         gdal.SetConfigOption('GDAL_TIFF_INTERNAL_MASK', 'YES')
 
-        self.checkDirectories()
-        self.processTifs()
-        self.cleanTempFolder()
+        self.check_directories()
+        self.process_files()
+        self.clean_temp_folder()
 
         print('OPERATION FINISHED')
 
-    def checkDirectories(self):
+    def check_directories(self):
         '''
         Create output folders and remove older files
         '''
@@ -84,69 +85,70 @@ class ConvertGeotiff:
         h.createFolder(params.geoserverDEM['output_folder'])
         h.createFolder(params.geoserverDEMRGB['output_folder'])
 
-    def processTifs(self):
+    def process_files(self):
 
         if(os.listdir(params.input_folder)):
-            vrt.generateVRT()
+            vrt.maybe_generate_VRT()
 
         processed = {}
 
         # Find files in the input folder
         for subdir, dirs, files in os.walk(params.input_folder):
             is_subdir = subdir != params.input_folder
+            
             if(is_subdir):
                 continue
 
             for file in files:
                 filepath = subdir + os.sep + file
-                if (h.getExtension(file) in params.extensions):
-                    try:
+                try:
+                    filename_has_mapid = params.filename_prefix in file
 
+                    if (h.get_extension(file) in params.extensions):
                         print(f'--> PROCESSING FILE {file} <--')
 
                         file_ds = gdal.Open(filepath, gdal.GA_ReadOnly)
                         # Number of bands
                         bands_count = file_ds.RasterCount
-                        self.isDEM = bands_count <= 2
+                        self.is_dem = bands_count <= 2
 
-                        lastBand = file_ds.GetRasterBand(bands_count)
-                        self.hasAlphaChannel = (
-                            lastBand.GetColorInterpretation() == 6)  # https://github.com/rasterio/rasterio/issues/100
-                        self.noDataValue = lastBand.GetNoDataValue()  # take any band
+                        last_band = file_ds.GetRasterBand(bands_count)
+                        # https://github.com/rasterio/rasterio/issues/100
+                        self.has_alpha = (last_band.GetColorInterpretation() == 6)
+                        
+                        self.no_data_value = last_band.GetNoDataValue()  # take any band
 
                         # Pix4DMatic injects an erroneous 'nan' value as noData attribute
-                        if ((self.noDataValue != None) and (math.isnan(self.noDataValue))):
-                            self.noDataValue = 0
+                        if ((self.no_data_value != None) and (math.isnan(self.no_data_value))):
+                            self.no_data_value = 0
 
-                        filenameHasMapId = params.filename_prefix in file
-
-                        if (self.isDEM):
+                        if (self.is_dem):
 
                             print(f'-> File {file} is DEM type')
 
                             # Generating output filename for DME case
                             self.mapId = h.removeExtension(file.split(
-                                params.filename_prefix)[1].split(params.dem_suffix)[0]) if filenameHasMapId else h.createMapId()
+                                params.filename_prefix)[1].split(params.dem_suffix)[0]) if filename_has_mapid else h.createMapId()
 
-                            if(not filenameHasMapId):
+                            if(not filename_has_mapid):
                                 h.checkFileProcessed(
                                     self, True, processed, file)
 
                             self.registroid = file.split(
-                                params.filename_prefix)[0] if filenameHasMapId else h.cleanFilename(h.removeExtension(file.split(params.dem_suffix)[0]))
+                                params.filename_prefix)[0] if filename_has_mapid else h.cleanFilename(h.removeExtension(file.split(params.dem_suffix)[0]))
                         else:
 
                             print(f'-> File {file} is RGB type')
 
                             self.mapId = h.removeExtension(
-                                file.split(params.filename_prefix)[1]) if filenameHasMapId else h.createMapId()
+                                file.split(params.filename_prefix)[1]) if filename_has_mapid else h.createMapId()
 
-                            if(not filenameHasMapId):
+                            if(not filename_has_mapid):
                                 h.checkFileProcessed(
                                     self, False, processed, file)
 
                             self.registroid = file.split(
-                                "_")[0] if filenameHasMapId else h.cleanFilename(h.removeExtension(file))
+                                "_")[0] if filename_has_mapid else h.cleanFilename(h.removeExtension(file))
 
                         output = f'{self.registroid}{params.filename_prefix}{self.mapId}'
 
@@ -154,7 +156,7 @@ class ConvertGeotiff:
                         self.outputFolder = f'{params.output_folder_storage}/{output}'
                         h.createFolder(self.outputFolder)
 
-                        self.outputFilename = output if not self.isDEM else '{}{}'.format(
+                        self.outputFilename = output if not self.is_dem else '{}{}'.format(
                             output, params.dem_suffix)
 
                         print(
@@ -169,7 +171,7 @@ class ConvertGeotiff:
 
                         self.pixel_area = self.pixelSizeX * abs(self.pixelSizeY)                        
                         
-                        if (self.hasAlphaChannel):
+                        if (self.has_alpha):
                             # generate an ultralight version to calculate the area
                             xsmall_version = gdal.Translate(
                                 params.tmp_folder + "\\tmpArea.vrt",
@@ -229,17 +231,33 @@ class ConvertGeotiff:
 
                         self.exportStorageFiles(file_ds)
 
-                        if ((self.isDEM and (params.geoserverDEM['enabled'] or params.geoserverDEMRGB['enabled'])) or params.geoserverRGB['enabled']):
+                        if ((self.is_dem and (params.geoserverDEM['enabled'] or params.geoserverDEMRGB['enabled'])) or params.geoserverRGB['enabled']):
                             self.exportGeoserverFiles(file_ds, file)
 
                         # Once we're done, close properly the dataset
                         file_ds = None
+          
+                    elif (bool(params.model3d['enabled']) and (h.get_extension(file) in params.model3d['extensions'])):
+                        self.registroid = file.split(
+                                "_")[0] if filename_has_mapid else h.cleanFilename(h.removeExtension(file))
+                        self.mapId = h.removeExtension(
+                                file.split(params.filename_prefix)[1]) if filename_has_mapid else h.createMapId()
 
-                    except RuntimeError as e:
-                        print(f'ERROR: Unable to process {filepath}')
-                        print(e)
-                        sys.exit(1)
+                        output = f'{self.registroid}{params.filename_prefix}{self.mapId}'
 
+                        # Create parent folder for mapId
+                        self.outputFolder = f'{params.output_folder_storage}/{output}'
+                        h.createFolder(self.outputFolder)
+
+                        self.outputFilename = output
+                        
+                        export_3d_model_glb(self, filepath)
+                        
+                except RuntimeError as e:
+                    print(f'ERROR: Unable to process {filepath}')
+                    print(e)
+                    sys.exit(1)
+                    
     def exportStorageFiles(self, file_ds):
         '''
         Export high and low res files
@@ -251,7 +269,7 @@ class ConvertGeotiff:
         if params.storageDEM['enabled'] or params.previews['enabled'] or params.storageDEM['quantities']:
             compressedGeotiff = h.getLightVersion(self, file_ds)
 
-        if (self.isDEM):
+        if (self.is_dem):
             if params.storageDEM['enabled'] or params.previews['enabled'] or params.storageDEM['quantities']:
                 self.colorValues = h.calculateDEMColorValues(
                     self, compressedGeotiff)
@@ -278,17 +296,18 @@ class ConvertGeotiff:
 
         print('EXPORTING GEOSERVER FILES')
 
-        if (self.isDEM):
+        if (self.is_dem):
             if (params.geoserverDEM['enabled'] or params.geoserverDEMRGB['enabled']):
                 exportGeoserverDEM(self, file_ds, file)
         else:
             if (params.geoserverRGB['enabled']):
                 exportGeoserverRGB(self, file_ds)
 
-    def cleanTempFolder(self):
-        if os.path.exists(params.tmp_folder):
-            print('-> Removing temp folder')
-            shutil.rmtree(params.tmp_folder)
+    def clean_temp_folder(self):
+        pass
+        # if os.path.exists(params.tmp_folder):
+        #     print('-> Removing temp folder')
+        #     shutil.rmtree(params.tmp_folder)
 
 
 ConvertGeotiff()

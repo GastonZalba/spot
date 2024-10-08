@@ -4,7 +4,7 @@ from rasterio.enums import Resampling
 import numpy as np
 
 import helpers as h
-import params as params
+import params
 
 TEMP_FOLDER = params.tmp_folder
 
@@ -21,14 +21,14 @@ def exportGeoserverDEM(self, file_ds, file):
         'xRes': max(0.3, self.pixelSizeX),
         'yRes': max(0.3, self.pixelSizeY),
         # force 'none' to fix old error in Drone Deploy exports (https://gdal.org/programs/gdal_translate.html#cmdoption-gdal_translate-a_nodata)
-        'srcNodata': 'none' if self.hasAlphaChannel else self.noDataValue
+        'srcNodata': 'none' if self.has_alpha else self.no_data_value
     }
 
     # change all tiff noData values to the same value
     if (kwargs['srcNodata'] != params.no_data and kwargs['srcNodata'] != 'none'):
         kwargs['dstNodata'] = params.no_data
         print(
-            f'-> Changing noData value from {self.noDataValue} to {params.no_data}')
+            f'-> Changing noData value from {self.no_data_value} to {params.no_data}')
 
     # if file has diferent epsg, convert
     if (self.epsg != params.geoserver_epsg):
@@ -74,7 +74,7 @@ def _exportFloat(self, file_ds, outputFilename):
         ],
         'metadataOptions': self.extra_metadata,
         # to fix old error in Drone Deploy exports (https://gdal.org/programs/gdal_translate.html#cmdoption-gdal_translate-a_nodata)
-        'noData': 'none' if self.hasAlphaChannel else params.no_data
+        'noData': 'none' if self.has_alpha else params.no_data
     }
 
     file_ds = gdal.Translate(gdaloutputDEM, file_ds, **kwargs)
@@ -116,9 +116,9 @@ def _exportRGB(self, tmpFile, outputFilename):
     # convert nan values no noData
     dem = np.nan_to_num(dem, nan=params.no_data, copy=False)
 
-    # normalize noDataValues
-    if self.noDataValue != None:
-        dem[dem == self.noDataValue] = params.no_data
+    # normalize no_data_values
+    if self.no_data_value != None:
+        dem[dem == self.no_data_value] = params.no_data
 
     if params.geoserverDEMRGB['encoding'] == 'mapbox':
 
