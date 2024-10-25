@@ -20,13 +20,14 @@ from export_formats.model3d import export_3d_model_glb
 
 from version import __version__
 
+
 try:
     from osgeo import gdal
 except:
     sys.exit('ERROR: osgeo module was not found')
 
 
-class ConvertGeotiff:
+class main:
     '''
     Some helpful docs:
     https://pcjericks.github.io/py-gdalogr-cookbook/
@@ -38,7 +39,16 @@ class ConvertGeotiff:
     '''
 
     def __init__(self):
-        print(f'SCRIPT Version: {__version__}')
+        
+        print('''
+███████ ██████   ██████  ████████ 
+██      ██   ██ ██    ██    ██    
+███████ ██████  ██    ██    ██    
+     ██ ██      ██    ██    ██    
+███████ ██       ██████     ██                                
+''')
+        
+        print(f'SPOT Version: {__version__}')
         
         version_num = int(gdal.VersionInfo('VERSION_NUM'))
         print(f'GDAL Version: {version_num}')
@@ -104,7 +114,7 @@ class ConvertGeotiff:
                 try:
                     filename_has_mapid = params.filename_prefix in file
 
-                    if (h.get_extension(file) in params.extensions):
+                    if (h.get_extension(file) in params.raster_extensions):
                         print(f'--> PROCESSING FILE {file} <--')
 
                         file_ds = gdal.Open(filepath, gdal.GA_ReadOnly)
@@ -253,6 +263,22 @@ class ConvertGeotiff:
                         
                         export_3d_model_glb(self, filepath)
                         
+                    elif (bool(params.point_cloud['enabled']) and (h.get_extension(file) in params.point_cloud['extensions'])):
+                        self.registroid = file.split(
+                                "_")[0] if filename_has_mapid else h.cleanFilename(h.removeExtension(file))
+                        self.mapId = h.removeExtension(
+                                file.split(params.filename_prefix)[1]) if filename_has_mapid else h.createMapId()
+
+                        output = f'{self.registroid}{params.filename_prefix}{self.mapId}'
+
+                        # Create parent folder for mapId
+                        self.outputFolder = f'{params.output_folder_storage}/{output}'
+                        h.createFolder(self.outputFolder)
+
+                        self.outputFilename = output
+                        
+                        export_pointcloud(self, filepath)
+                        
                 except RuntimeError as e:
                     print(f'ERROR: Unable to process {filepath}')
                     print(e)
@@ -304,10 +330,10 @@ class ConvertGeotiff:
                 exportGeoserverRGB(self, file_ds)
 
     def clean_temp_folder(self):
-        pass
-        # if os.path.exists(params.tmp_folder):
-        #     print('-> Removing temp folder')
-        #     shutil.rmtree(params.tmp_folder)
+        if os.path.exists(params.tmp_folder):
+            print('-> Removing temp folder')
+            shutil.rmtree(params.tmp_folder)
 
 
-ConvertGeotiff()
+if __name__ == "__main__":
+    main()

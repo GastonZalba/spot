@@ -16,7 +16,7 @@ def maybe_generate_VRT():
             filepath = params.tmp_folder + '\list.txt'
             with open(filepath, "w") as l:
                 for file in files:
-                    if(h.get_extension(file) in params.extensions):
+                    if(h.get_extension(file) in params.raster_extensions):
                         tile_file_path = path + os.sep + file
                         l.write(tile_file_path + '\n')
 

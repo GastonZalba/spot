@@ -1,7 +1,13 @@
 import tempfile
+import os
 
-tmp_folder = f'{tempfile.gettempdir()}\geotiff-processor'
-extensions = ['.tif', '.tiff', '.vrt']
+tmp_folder = f'{tempfile.gettempdir()}/geotiff-processor'
+
+# set enviroment variables for GDAL
+os.environ['GDAL_DATA'] = os.environ.get('VIRTUAL_ENV') + '/Lib/site-packages/osgeo/data/gdal'
+os.environ['PROJ_LIB'] = os.environ.get('VIRTUAL_ENV') + '/Lib/site-packages/osgeo/data/proj'
+
+raster_extensions = ['.tif', '.tiff', '.vrt']
 
 input_folder = 'input'
 output_folder = 'output'
@@ -62,7 +68,7 @@ geoserverDEM = {
     'enabled': True,
     'output_folder': output_folder_geoserver + '/mde',
     'overviews': True,
-    'gsd': 50  # cm
+    'gsd': 50 # cm
 }
 
 geoserverDEMRGB = {
@@ -74,16 +80,16 @@ geoserverDEMRGB = {
 
 storageRGB = {
     'enabled': True,
-    'gsd': None,  # None to use original | cm
-    'gsd_sm_trigger': 5,  # cm 
-    'gsd_sm': 10,  # cm Used if the default gsd is less than gsd_limit
+    'gsd': None, # None to use original | cm
+    'gsd_sm_trigger': 5, # cm 
+    'gsd_sm': 10, # cm Used if the default gsd is less than gsd_limit
     'overviews': True,
     'gdalinfo': True
 }
 
 storageDEM = {
     'enabled': True,
-    'gsd': 20,  # cm
+    'gsd': 20, # cm
     'overviews': True,
     'quantities': True,
     'gdalinfo': True
@@ -94,13 +100,17 @@ model3d = {
     'extensions': ['.obj']
 }
 
+point_cloud = {
+    'enabled': True,
+    'extensions': ['.laz', '.las']
+}
+
 previews = {
     'enabled': True,
-    'width': 650  # px
+    'width': 650 # px
 }
 
 styleDEM = {
-
     # Remove negative values from dem from the style calculations. Otherwhise, removes only the noData values.
     # This can be used if the dem has some processing errors/holes
     'disregard_values_less_than_0': True,

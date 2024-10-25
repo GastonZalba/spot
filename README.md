@@ -1,54 +1,57 @@
-# Procesamiento de archivos Geotiff
+# Spatial Photogrammetry Optimization Tools - SPOT
 
-Script en Python para procesar ortomosaicos/geotifs para subirlos a geoservers como capa raster, y a la nube para ser descargados.
+Python script to process and optimize material created from spatial photogrammetry (from software such as Pix4D Mapper, Pix4D Matic, Agisoft Metashape, Drone Deploy, etc.) to facilitate uploading to the web, downloading, viewing from the browser and on the desktop , incorporation to geoservers and more. It can process both RGB and MDE orthomosaics, as 3D models or point clouds.
 
-El script crea los siguientes archivos optimizados:
+The script creates the following files:
 
-- para subir al geoserver
-  - .tif en calidad intermedia (con overviews/render piramidal en diferentes escalas), EPSG:3857
-  - .geojson con el contorno de la imagen para subir al wms, con los campos gsd, srs, registroid y date (si existe)
-- para subir a la nube:
-  - .tif en calidad baja para usar como preview (w:650px), EPSG original
-  - .tif en calidad alta, ideal para importar desde QGis, EPSG original
-  - .tif en calidad media, ideal para usar en AutoCAD o Civil 3D, EPSG original
-  - .tfw con la información geoespacial (para usar en AutoCAD, por ejemplo)
+- to upload to the geoserver
+  - .tif in intermediate quality (with pyramid overviews/render at different scales), EPSG:3857
+  - .geojson with the outline of the image to upload to the wms, with the gsd, srs, registryid and date fields (if it exists)
+- to upload to the cloud:
+  - raster .tif in low quality to use as preview (w:650px), original EPSG
+  - raster .tif in high quality, ideal for importing from [QGis](https://www.qgis.org/), original EPSG
+  - raster .tif in medium quality, ideal for use in AutoCAD or Civil 3D, original EPSG
+  - world file .tfw with the geospatial information (to use when importing into AutoCAD, for example)
+- for download or viewing in the browser:
+  - 3d model .glb to open with any 3d model viewer (with compression [draco](https://google.github.io/draco/))
+  - .laz point cloud to open with point cloud viewer (with optimization [COPC](https://copc.io/), to open on the web with [Potree](https://github.com/potree/potree/) or on the desktop with [QGis](https://www.qgis.org/))
 
-## Instalación
+## Installation
 
-- Descargar e instalar [Python](https://www.python.org/downloads/)
-- Testear en console `python --version` y `pip --version` para corroborar que esté todo andando.
-- Descargar [GDAL](https://www.lfd.uci.edu/~gohlke/pythonlibs/#gdal), seleccionando la versión más nueva de GDAL, y la adecuada según la versión de Python instalado y el procesador. Si se está usando Python 3.7, por ejemplo, descargar y luego instalar usando `pip install GDAL-3.3.1-cp37-cp37m-win_amd64.whl` (siempre ajustando según la versión descargada).
-- Descargar [Rasterio](https://www.lfd.uci.edu/~gohlke/pythonlibs/#rasterio), seleccionando versión análoga al GDAL, e instalar del mismo modo.
-- Para poder usar el paquete instalado desde la consola, configurar variables de entorno (poniendo la ruta completa según donde esté instalado el paquete y la versión de python):
+### Using requeriments and Python 3.12
+- Create an virtual enviroment `python3.12 -m venv .venv`
+- Load the enviroment `.venv/Scripts/activate`
+- Install the requeriments `pip install requeriments.txt`
+- Manually install an npm package to compress the 3d models: `npm install -g gltf-pipeline`: [gltf-pipeline](https://github.com/CesiumGS/gltf-pipeline)
+
+### Manual installation (windows)
+- If you what to use another python version, or install manually al the components, use:
+- Download [GDAL](https://github.com/cgohlke/geospatial-wheels/releases/), selecting the newest version of GDAL, and the appropriate one according to the version of Python installed and the processor. If you are using Python 3.7, for example, download and then install using `pip install GDAL-3.3.1-cp37-cp37m-win_amd64.whl` (always adjusting according to the downloaded version).
+- Download [Rasterio](https://github.com/cgohlke/geospatial-wheels/releases/), selecting a version analogous to GDAL, and install in the same way.
+- To be able to use the installed package from the console, configure environment variables (putting the full path depending on where the package is installed and the python version):
   - `GDAL_DATA`: '...\Python\Python37\Lib\site-packages\osgeo\data\gdal'
   - `PROJ_LIB`: '...\Python\Python37\Lib\site-packages\osgeo\data\proj'
-  - Agregar a la variable `Path` la ruta '...\Python\Python37\Lib\site-packages\osgeo'
-  - Chequear en consola `gdalinfo --version`.
-- Instalar la librerías:
-  - [Numpy](https://numpy.org/): `pip install numpy`.
-  - [PIL](https://python-pillow.org/): `pip install pillow`.
-  - Para procesar modelos 3d:
-    - [trimesh](https://trimesh.org/index.html): `pip install trimesh` 
-    - [pygltflib](https://pypi.org/project/pygltflib/): `pip install pygltflib` 
+  - Add to the `Path` variable the path '...\Python\Python37\Lib\site-packages\osgeo'
+  - Check `gdalinfo --version` in console.
+- Install the libraries:
+  - [Numpy](https://numpy.org/)
+  - [PIL](https://python-pillow.org/) (for creating previews) 
+  - To process point clouds:
+    - [laspy](https://laspy.readthedocs.io/en/latest/index.html)
+  - To process 3d models:
+    - [trimesh](https://trimesh.org/index.html):
+    - [pygltflib](https://pypi.org/project/pygltflib/)
     - [gltf-pipeline](https://github.com/CesiumGS/gltf-pipeline) (NodeJS): `npm install -g gltf-pipeline`
 
+## Use
 
-## Uso
+- Place the .tif/.tiff orthomosaics in the highest resolution available in the `input` folder. If the orthomosaic to be processed is in tiles format, create a containing folder with all the corresponding images.
+- If you want to process a 3D model, place the .obj and its corresponding texture and mtl loosely in the same `input` folder.
+- Name the complete orthomosaics (or the containing folder in the case of tiles, or objs) the audiovisual record number to which they belong (this data will be incorporated as metadata in the processed files). NOTE: in case a record has more than one mapping, add a hyphen and the number to the end of each file name; `-1`, `-2`, etc.
+- If you wish to process a MDE (Digital Elevation Model) geotiff file, enter the suffix `_mde` after the audiovisual registration number, leaving a structure analogous to `12345678_mde.tif`.
+- If you reprocess an existing orthomosaic (or add new elements), and want to preserve the same MapId, you must enter the file name obtained from the original processing as the file name (and if it is a mde, add the suffix `_mde` at the end), remaining similar to `12345678_MapId-123445_mde.tif`.
+- Run `python process.py` to start the conversion. The processed files will be created in the `output` folder.
 
-- Colocar los ortomosaicos .tif/.tiff en máxima resolución disponible en la carpeta `input`. Si el ortomosaico a procesar está en formato tiles, crear una carpeta contenedora con todas las imágenes correspondientes.
-- Si se desea procesar un modelo 3d, colocar sueltos el .obj y su correspondiente textura y mtl en la misma carpeta `input`.
-- A los ortomosaicos completos (o la carpeta contenedora en el caso de los tiles, o a los obj) ponerles como nombre el número de registro audiovisual al que pertenecen (este dato será incorporado como metadata en los archivos procesados). NOTA: en caso de que un registro tenga más de un mapeo, agregarle al final de cada nombre de archivo un guión y el número; `-1`,`-2`, etc.
-- Si se desea procesar un archivo geotiff MDE (Modelo Digital de Elevación), ingresar a continuación del número de registro audiovisual el sufijo `_mde`, quedando una estructura análoga a `12345678_mde.tif`.
-- En caso de volver a procesar un ortomosaico existente (o añadir elementos nuevos), y querer preservar el mismo MapId, debe ingresar como nombre del archivo el obtenido del procesamiento original (y en caso de ser un mde, agregar el sufijo `_mde` al final), quedando similar a `12345678_MapId-123445_mde.tif`.
-- Ejecutar `python process.py` para iniciar la conversión. Los archivos procesados serán creados en la carpeta `output`.
+## Configuration
 
-## Configuración
-
-- De ser necesario modificar archivo `params.py` según formatos de exportación, metadata y carpetas.
-
-
-## TODO
-
-- Subir automáticamente los archivos storage a la red
-- Escribir directamente en base de datos lo que se guarda en la carpeta _database_
-- Dividir archivo process.py en diferentes módulos
+- If necessary, modify the `params.py` file according to export formats, metadata and folders.
