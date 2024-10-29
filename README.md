@@ -18,15 +18,15 @@ The script creates the following files:
 
 ## Installation
 
-### Using requeriments and Python 3.12
-- Create an virtual enviroment `python3.12 -m venv .venv`
+### Using requeriments and Python 3.9
+- Create an virtual enviroment `python3.9 -m venv .venv`
 - Load the enviroment `.venv/Scripts/activate`
 - Install the requeriments `pip install requeriments.txt`
 - Manually install an npm package to compress the 3d models: `npm install -g gltf-pipeline`: [gltf-pipeline](https://github.com/CesiumGS/gltf-pipeline)
 
 ### Manual installation (windows)
 - If you what to use another python version, or install manually al the components, use:
-- Download [GDAL](https://github.com/cgohlke/geospatial-wheels/releases/), selecting the newest version of GDAL, and the appropriate one according to the version of Python installed and the processor. If you are using Python 3.7, for example, download and then install using `pip install GDAL-3.3.1-cp37-cp37m-win_amd64.whl` (always adjusting according to the downloaded version).
+- Download [GDAL](https://github.com/cgohlke/geospatial-wheels/releases/), selecting the newest version of GDAL, and the appropriate one according to the version of Python installed and the processor. If you are using Python 3.7, for example, download and then install using `pip install GDAL-3.9.2-cp39-cp39-win_amd64.whl` (always adjusting according to the downloaded version).
 - Download [Rasterio](https://github.com/cgohlke/geospatial-wheels/releases/), selecting a version analogous to GDAL, and install in the same way.
 - To be able to use the installed package from the console, configure environment variables (putting the full path depending on where the package is installed and the python version):
   - `GDAL_DATA`: '...\Python\Python37\Lib\site-packages\osgeo\data\gdal'
@@ -38,6 +38,7 @@ The script creates the following files:
   - [PIL](https://python-pillow.org/) (for creating previews) 
   - To process point clouds:
     - [laspy](https://laspy.readthedocs.io/en/latest/index.html)
+    - [lazrs](https://pypi.org/project/lazrs/)
   - To process 3d models:
     - [trimesh](https://trimesh.org/index.html):
     - [pygltflib](https://pypi.org/project/pygltflib/)

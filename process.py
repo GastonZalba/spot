@@ -20,7 +20,6 @@ from export_formats.model3d import export_3d_model_glb
 
 from version import __version__
 
-
 try:
     from osgeo import gdal
 except:
