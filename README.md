@@ -1,6 +1,6 @@
 # Spatial Photogrammetry Optimization Tools - SPOT
 
-Python script to process and optimize material created from spatial photogrammetry (from software such as Pix4D Mapper, Pix4D Matic, Agisoft Metashape, Drone Deploy, etc.) to facilitate uploading to the web, downloading, viewing from the browser and on the desktop , incorporation to geoservers and more. It can process both RGB and MDE orthomosaics, as 3D models.
+Python script to process and optimize material created from spatial photogrammetry (using software such as Pix4D Mapper, Pix4D Matic, Agisoft Metashape, Drone Deploy, etc.) to facilitate uploading to the web, downloading, viewing from the browser and on the desktop, incorporation to geoservers and more. It can process RGB and MDE orthomosaics and 3D models.
 
 The script creates the following files:
 
@@ -19,9 +19,9 @@ The script creates the following files:
 ## Installation
 
 ### Using requeriments and Python 3.9
-- Create an virtual enviroment `python3.9 -m venv .venv`
+- Create an virtual enviroment `py -3.9 -m venv .venvv`
 - Load the enviroment `.venv/Scripts/activate`
-- Install the requeriments `pip install requeriments.txt`
+- Install the requeriments `pip install -r requirements.txt`
 - Manually install an npm package to compress the 3d models: `npm install -g gltf-pipeline`: [gltf-pipeline](https://github.com/CesiumGS/gltf-pipeline)
 
 ### Manual installation (windows)
@@ -29,9 +29,9 @@ The script creates the following files:
 - Download [GDAL](https://github.com/cgohlke/geospatial-wheels/releases/), selecting the newest version of GDAL, and the appropriate one according to the version of Python installed and the processor. If you are using Python 3.7, for example, download and then install using `pip install GDAL-3.9.2-cp39-cp39-win_amd64.whl` (always adjusting according to the downloaded version).
 - Download [Rasterio](https://github.com/cgohlke/geospatial-wheels/releases/), selecting a version analogous to GDAL, and install in the same way.
 - To be able to use the installed package from the console, configure environment variables (putting the full path depending on where the package is installed and the python version):
-  - `GDAL_DATA`: '...\Python\Python37\Lib\site-packages\osgeo\data\gdal'
-  - `PROJ_LIB`: '...\Python\Python37\Lib\site-packages\osgeo\data\proj'
-  - Add to the `Path` variable the path '...\Python\Python37\Lib\site-packages\osgeo'
+  - `GDAL_DATA`: '...\Python\Python39\Lib\site-packages\osgeo\data\gdal'
+  - `PROJ_LIB`: '...\Python\Python39\Lib\site-packages\osgeo\data\proj'
+  - Add to the `Path` variable the path '...\Python\Python39\Lib\site-packages\osgeo'
   - Check `gdalinfo --version` in console.
 - Install the libraries:
   - [Numpy](https://numpy.org/)
@@ -53,3 +53,6 @@ The script creates the following files:
 ## Configuration
 
 - If necessary, modify the `params.py` file according to export formats, metadata and folders.
+
+## @TODO
+- Add point cloud support
