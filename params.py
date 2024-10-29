@@ -100,11 +100,6 @@ model3d = {
     'extensions': ['.obj']
 }
 
-point_cloud = {
-    'enabled': True,
-    'extensions': ['.laz', '.las']
-}
-
 previews = {
     'enabled': True,
     'width': 650 # px

@@ -260,23 +260,7 @@ class main:
 
                         self.outputFilename = output
                         
-                        export_3d_model_glb(self, filepath)
-                        
-                    elif (bool(params.point_cloud['enabled']) and (h.get_extension(file) in params.point_cloud['extensions'])):
-                        self.registroid = file.split(
-                                "_")[0] if filename_has_mapid else h.cleanFilename(h.removeExtension(file))
-                        self.mapId = h.removeExtension(
-                                file.split(params.filename_prefix)[1]) if filename_has_mapid else h.createMapId()
-
-                        output = f'{self.registroid}{params.filename_prefix}{self.mapId}'
-
-                        # Create parent folder for mapId
-                        self.outputFolder = f'{params.output_folder_storage}/{output}'
-                        h.createFolder(self.outputFolder)
-
-                        self.outputFilename = output
-                        
-                        export_pointcloud(self, filepath)
+                        export_3d_model_glb(self, filepath)                        
                         
                 except RuntimeError as e:
                     print(f'ERROR: Unable to process {filepath}')

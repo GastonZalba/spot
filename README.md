@@ -1,6 +1,6 @@
 # Spatial Photogrammetry Optimization Tools - SPOT
 
-Python script to process and optimize material created from spatial photogrammetry (from software such as Pix4D Mapper, Pix4D Matic, Agisoft Metashape, Drone Deploy, etc.) to facilitate uploading to the web, downloading, viewing from the browser and on the desktop , incorporation to geoservers and more. It can process both RGB and MDE orthomosaics, as 3D models or point clouds.
+Python script to process and optimize material created from spatial photogrammetry (from software such as Pix4D Mapper, Pix4D Matic, Agisoft Metashape, Drone Deploy, etc.) to facilitate uploading to the web, downloading, viewing from the browser and on the desktop , incorporation to geoservers and more. It can process both RGB and MDE orthomosaics, as 3D models.
 
 The script creates the following files:
 
@@ -14,7 +14,7 @@ The script creates the following files:
   - world file .tfw with the geospatial information (to use when importing into AutoCAD, for example)
 - for download or viewing in the browser:
   - 3d model .glb to open with any 3d model viewer (with compression [draco](https://google.github.io/draco/))
-  - .laz point cloud to open with point cloud viewer (with optimization [COPC](https://copc.io/), to open on the web with [Potree](https://github.com/potree/potree/) or on the desktop with [QGis](https://www.qgis.org/))
+
 
 ## Installation
 
@@ -36,9 +36,6 @@ The script creates the following files:
 - Install the libraries:
   - [Numpy](https://numpy.org/)
   - [PIL](https://python-pillow.org/) (for creating previews) 
-  - To process point clouds:
-    - [laspy](https://laspy.readthedocs.io/en/latest/index.html)
-    - [lazrs](https://pypi.org/project/lazrs/)
   - To process 3d models:
     - [trimesh](https://trimesh.org/index.html):
     - [pygltflib](https://pypi.org/project/pygltflib/)
