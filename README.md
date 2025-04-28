@@ -19,7 +19,7 @@ The script creates the following files:
 ## Installation
 
 ### Using requeriments and Python 3.9
-- Create an virtual enviroment `py -3.9 -m venv .venvv`
+- Create an virtual enviroment `py -3.9 -m venv .venv`
 - Load the enviroment `.venv/Scripts/activate`
 - Install the requeriments `pip install -r requirements.txt`
 - Manually install an npm package to compress the 3d models: `npm install -g gltf-pipeline`: [gltf-pipeline](https://github.com/CesiumGS/gltf-pipeline)
